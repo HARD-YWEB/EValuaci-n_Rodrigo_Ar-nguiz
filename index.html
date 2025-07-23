@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación Carga Criogénica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        /* Estilos personalizados para asegurar visibilidad y un mejor aspecto */
+        body {
+            background-color: #f8f9fa; /* Color de fondo claro */
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra suave para las tarjetas */
+        }
+        .question h5 {
+            color: #343a40; /* Color oscuro para el título de la pregunta */
+            margin-bottom: 15px;
+        }
+        .form-check-label {
+            color: #495057; /* Color oscuro para el texto de las opciones */
+            cursor: pointer; /* Indica que se puede hacer clic */
+            padding-left: 0.5rem; /* Espacio entre el radio button y el texto */
+        }
+        .form-check-input {
+            margin-right: 0.5rem; /* Espacio entre el radio button y el label */
+        }
+        .card.border-success {
+            border-color: #28a745 !important; /* Verde Bootstrap */
+        }
+        .card.border-danger {
+            border-color: #dc3545 !important; /* Rojo Bootstrap */
+        }
+        .card.border-secondary {
+            border-color: #6c757d !important; /* Gris para no respondidas */
+        }
+        .text-success {
+            color: #28a745 !important;
+        }
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        #submit-btn, #start-btn {
+            background-color: #007bff; /* Azul primario de Bootstrap */
+            border-color: #007bff;
+        }
+        #submit-btn:hover, #start-btn:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Evaluación de Carga Criogénica</h1>
+
+        <div id="start-screen" class="card p-4 shadow-sm">
+            <h2 class="card-title text-center">Bienvenido a la Evaluación</h2>
+            <p class="card-text text-center">Este examen evalúa tus conocimientos sobre seguridad y manejo de cargas criogénicas.</p>
+            <p class="card-text text-center">Tienes 90 minutos para completar las 80 preguntas.</p>
+            <button id="start-btn" class="btn btn-primary btn-lg mt-3">Comenzar Evaluación</button>
+        </div>
+
+        <div id="quiz-screen" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light border rounded shadow-sm">
+                <h4>Tiempo restante: <span id="timer" class="badge bg-secondary">90:00</span></h4>
+            </div>
+            <form id="quiz-form"></form>
+            <button id="submit-btn" class="btn btn-primary btn-lg w-100 mt-4">Enviar Respuestas</button>
+        </div>
+
+        <div id="result-screen" class="d-none card p-4 shadow-sm mt-4">
+            <h2 class="card-title text-center">Resultados</h2>
+            <p class="card-text fs-5 text-center">Puntaje: <span id="score" class="fw-bold">0</span> / <span id="total-questions" class="fw-bold"></span></p>
+            <p class="card-text fs-5 text-center">Nota: <span id="grade" class="fw-bold"></span> - <span id="status" class="fw-bold"></span></p>
+            <button class="btn btn-info btn-lg mt-3" onclick="location.reload()">Intentar nuevamente</button>
+
+            <h3 class="mt-4">Revisión de Respuestas:</h3>
+            <div id="answers" class="mt-3">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eGXz/QJgxqbuF4F1a" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+</html>
