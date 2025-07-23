@@ -942,7 +942,6 @@ const questions = [
 ];
 
 // --- JavaScript para el manejo del Quiz ---
-
 const startScreen = document.getElementById('start-screen');
 const quizScreen = document.getElementById('quiz-screen');
 const resultScreen = document.getElementById('result-screen');
@@ -974,6 +973,14 @@ function getUniqueQuestions(originalQuestions) {
     return unique;
 }
 
+// Función para barajar un array (algoritmo de Fisher-Yates)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Intercambiar elementos
+    }
+}
+
 // Inicializa las preguntas únicas al cargar el script
 uniqueQuestions = getUniqueQuestions(questions);
 
@@ -985,16 +992,18 @@ document.addEventListener('DOMContentLoaded', () => {
     totalQuestionsDisplay.textContent = uniqueQuestions.length; // Establece el total de preguntas aquí
 });
 
-
 function startQuiz() {
     alert("¡Hola Rodrigo Aránguiz! ¡Bienvenido a la evaluación de Carga Criogénica! Mucha suerte. 😊");
     startScreen.classList.add('d-none');
     quizScreen.classList.remove('d-none');
+    quizForm.innerHTML = ''; // Limpiar preguntas anteriores para un nuevo intento
     loadQuestions();
     startTimer();
 }
 
 function startTimer() {
+    clearInterval(timerInterval); // Asegurarse de limpiar cualquier temporizador previo
+    timeLeft = 90 * 60; // Resetear el tiempo para cada nuevo intento
     timerInterval = setInterval(() => {
         const minutes = Math.floor(timeLeft / 60);
         const seconds = timeLeft % 60;
@@ -1015,17 +1024,34 @@ function loadQuestions() {
         questionDiv.innerHTML = `<h5>${index + 1}. ${q.question}</h5>`;
 
         const answersDiv = document.createElement('div');
-        for (const key in q.answers) {
+        
+        // Convertir el objeto de respuestas a un array de pares [key, value]
+        const answerEntries = Object.entries(q.answers);
+        // Barajar el array de respuestas
+        shuffleArray(answerEntries);
+
+        // Crear un nuevo objeto de respuestas con el orden aleatorio y remapear las claves
+        const shuffledAnswers = {};
+        const answerKeys = ['a', 'b', 'c', 'd']; // Las claves originales
+        answerEntries.forEach(([originalKey, value], i) => {
+            const newKey = answerKeys[i]; // Asignar nuevas claves 'a', 'b', 'c', 'd' en orden
+            shuffledAnswers[newKey] = value;
+        });
+
+        // Generar las alternativas con el nuevo orden
+        answerEntries.forEach(([originalKey, value], i) => {
+            const newKey = answerKeys[i]; // La clave aleatorizada
             const answerLabel = document.createElement('div');
             answerLabel.classList.add('form-check');
             answerLabel.innerHTML = `
-                <input class="form-check-input" type="radio" name="question${index}" id="question${index}-${key}" value="${key}">
-                <label class="form-check-label" for="question${index}-${key}">
-                    ${key.toUpperCase()}: ${q.answers[key]}
+                <input class="form-check-input" type="radio" name="question${index}" id="question${index}-${newKey}" value="${originalKey}">
+                <label class="form-check-label" for="question${index}-${newKey}">
+                    ${newKey.toUpperCase()}: ${value}
                 </label>
             `;
             answersDiv.appendChild(answerLabel);
-        }
+        });
+
         questionDiv.appendChild(answersDiv);
         quizForm.appendChild(questionDiv);
     });
@@ -1113,7 +1139,6 @@ function displayAnswers(userAnswers) {
         answersDiv.appendChild(answerCard);
     });
 }
-
 
 // Event Listeners
 startBtn.addEventListener('click', startQuiz);
