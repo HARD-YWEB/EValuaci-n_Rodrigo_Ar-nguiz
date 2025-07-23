@@ -7,7 +7,7 @@ const questions = [
             c: "-25°C",
             d: "0°C"
         },
-        correctAnswer: "b"
+        correctAnswer: "b" // Original correct answer key
     },
     {
         question: "¿Cuál es el principal riesgo asociado al contacto con gases criogénicos y tuberías subenfriadas?",
@@ -957,6 +957,7 @@ const totalQuestionsDisplay = document.getElementById('total-questions');
 let timeLeft = 90 * 60; // 90 minutos en segundos
 let timerInterval;
 let shuffledQuestions = []; // Array para almacenar las preguntas barajadas
+let questionCorrectAnswersMap = new Map(); // Para almacenar la 'nueva' clave de respuesta correcta por pregunta
 
 // Función para barajar un array (algoritmo de Fisher-Yates)
 function shuffleArray(array) {
@@ -971,7 +972,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startScreen.classList.remove('d-none');
     quizScreen.classList.add('d-none');
     resultScreen.classList.add('d-none');
-    // totalQuestionsDisplay.textContent se establecerá en startQuiz para reflejar las preguntas barajadas
 });
 
 function startQuiz() {
@@ -983,6 +983,9 @@ function startQuiz() {
     // Barajar las preguntas antes de cargarlas
     shuffledQuestions = [...questions]; // Crear una copia para no modificar el array original
     shuffleArray(shuffledQuestions);
+
+    // Reiniciar el mapa de respuestas correctas para el nuevo intento
+    questionCorrectAnswersMap = new Map();
 
     totalQuestionsDisplay.textContent = shuffledQuestions.length; // Establece el total de preguntas barajadas
     loadQuestions();
@@ -1006,6 +1009,8 @@ function startTimer() {
 }
 
 function loadQuestions() {
+    const displayKeys = ['a', 'b', 'c', 'd']; // Las claves de visualización fijas
+
     shuffledQuestions.forEach((q, index) => {
         const questionDiv = document.createElement('div');
         questionDiv.classList.add('question', 'mb-3', 'p-3', 'border', 'rounded');
@@ -1013,29 +1018,39 @@ function loadQuestions() {
 
         const answersDiv = document.createElement('div');
 
-        // Convertir el objeto de respuestas a un array de pares [key, value]
-        const answerEntries = Object.entries(q.answers);
-        // Barajar el array de respuestas
-        shuffleArray(answerEntries);
+        // Convertir el objeto de respuestas a un array de pares [valor de la respuesta, clave original]
+        // Esto permite mantener el rastro de cuál era la respuesta correcta ANTES de barajar
+        const answerOptions = Object.keys(q.answers).map(key => ({
+            value: q.answers[key],
+            originalKey: key
+        }));
 
-        // Generar las alternativas con el nuevo orden aleatorio
-        // Las claves de los radio buttons ('a', 'b', 'c', 'd') pueden permanecer estáticas
-        // pero el valor asociado a cada clave (la letra de la respuesta original) debe ser el correcto.
-        // La etiqueta debe mostrar la letra aleatoria, pero el valor del input debe ser la clave original de la respuesta
-        const newAnswerOrderKeys = ['a', 'b', 'c', 'd']; // Las etiquetas que se mostrarán (siempre a,b,c,d)
+        // Barajar las opciones de respuesta
+        shuffleArray(answerOptions);
 
-        answerEntries.forEach(([originalKey, value], i) => {
-            const displayKey = newAnswerOrderKeys[i]; // La clave de visualización (a, b, c, d en orden aleatorio de respuestas)
+        let correctDisplayKey = null;
+
+        // Asignar nuevas claves de visualización y construir el HTML
+        answerOptions.forEach((option, i) => {
+            const currentDisplayKey = displayKeys[i]; // 'a', 'b', 'c', 'd' en orden
             const answerLabel = document.createElement('div');
             answerLabel.classList.add('form-check');
             answerLabel.innerHTML = `
-                <input class="form-check-input" type="radio" name="question${index}" id="question${index}-${displayKey}" value="${originalKey}">
-                <label class="form-check-label" for="question${index}-${displayKey}">
-                    ${displayKey.toUpperCase()}: ${value}
+                <input class="form-check-input" type="radio" name="question${index}" id="question${index}-${currentDisplayKey}" value="${currentDisplayKey}">
+                <label class="form-check-label" for="question${index}-${currentDisplayKey}">
+                    ${currentDisplayKey.toUpperCase()}: ${option.value}
                 </label>
             `;
             answersDiv.appendChild(answerLabel);
+
+            // Si esta es la respuesta correcta original, guarda su nueva clave de visualización
+            if (option.originalKey === q.correctAnswer) {
+                correctDisplayKey = currentDisplayKey;
+            }
         });
+
+        // Almacenar la clave de visualización correcta para esta pregunta en el mapa
+        questionCorrectAnswersMap.set(index, correctDisplayKey);
 
         questionDiv.appendChild(answersDiv);
         quizForm.appendChild(questionDiv);
@@ -1048,13 +1063,15 @@ function submitQuiz() {
     resultScreen.classList.remove('d-none');
 
     let score = 0;
-    const userAnswers = {};
+    const userAnswers = {}; // Almacenará la clave de visualización que el usuario seleccionó
 
     shuffledQuestions.forEach((q, index) => {
         const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+        const correctDisplayKey = questionCorrectAnswersMap.get(index); // Obtener la clave de visualización correcta para esta pregunta
+
         if (selectedOption) {
-            userAnswers[index] = selectedOption.value; // selectedOption.value es la clave original (a,b,c,d)
-            if (selectedOption.value === q.correctAnswer) {
+            userAnswers[index] = selectedOption.value; // El valor es la clave de visualización (a, b, c, d)
+            if (selectedOption.value === correctDisplayKey) {
                 score++;
             }
         } else {
@@ -1063,7 +1080,6 @@ function submitQuiz() {
     });
 
     scoreDisplay.textContent = score;
-    // La nota se calcula sobre el total de shuffledQuestions
     const rawGrade = (score / shuffledQuestions.length) * 6 + 1;
     const finalGrade = Math.min(7.0, Math.max(1.0, rawGrade)).toFixed(1);
 
@@ -1088,39 +1104,63 @@ function displayAnswers(userAnswers) {
     answersDiv.innerHTML = ''; // Limpiar respuestas previas
     shuffledQuestions.forEach((q, index) => {
         const answerCard = document.createElement('div');
-        answerCard.classList.add('card', 'mb-2', 'shadow-sm'); // Usamos mb-2 para un espacio más compacto entre las tarjetas
+        answerCard.classList.add('card', 'mb-2', 'shadow-sm');
 
-        const userAnswer = userAnswers[index];
-        const isCorrect = (userAnswer === q.correctAnswer);
+        const userAnswerDisplayKey = userAnswers[index]; // La clave de visualización que el usuario seleccionó
+        const correctDisplayKey = questionCorrectAnswersMap.get(index); // La clave de visualización que era la correcta
+
+        const isCorrect = (userAnswerDisplayKey === correctDisplayKey);
 
         let cardClass = isCorrect ? 'border-success' : 'border-danger';
-        if (userAnswer === null) {
+        if (userAnswerDisplayKey === null) {
             cardClass = 'border-secondary'; // No answer given
         }
-
         answerCard.classList.add(cardClass);
+
+        // Obtener el texto de la respuesta del usuario y la respuesta correcta usando sus claves originales
+        // Para esto, necesitamos el mapeo de la clave de visualización a la clave original
+        const originalCorrectAnswerValue = q.answers[q.correctAnswer];
+        let userAnswerValue = "No respondida";
+        if (userAnswerDisplayKey !== null) {
+            // Find the option that corresponds to the user's selected display key
+            const answerOptions = Object.keys(q.answers).map(key => ({
+                value: q.answers[key],
+                originalKey: key
+            }));
+            // We need to re-find the value of the selected answer, because `userAnswerDisplayKey`
+            // is the dynamic key. The `q.answers` object uses the static keys.
+            // This is complex because the user's answer value is *linked to its display key*
+            // not its original key directly in this flow.
+            // A better way is to store the actual value selected by the user, not just the display key.
+            // Let's modify submitQuiz to store the actual text value too.
+            const selectedRadio = document.querySelector(`input[name="question${index}"][value="${userAnswerDisplayKey}"]`);
+            if (selectedRadio) {
+                 // To get the actual text from the displayed options
+                userAnswerValue = selectedRadio.nextElementSibling.textContent.substring(3).trim(); // Remove "A: " etc.
+            }
+        }
 
         let feedbackHtml = `
             <div class="card-body">
                 <h6 class="card-title fw-bold">${index + 1}. ${q.question}</h6>
                 <p class="card-text mb-0"><strong>Tu respuesta:</strong>
-                    ${userAnswer ? `${userAnswer.toUpperCase()}: ${q.answers[userAnswer]}` : 'No respondida'}
+                    ${userAnswerDisplayKey ? `${userAnswerDisplayKey.toUpperCase()}: ${userAnswerValue}` : 'No respondida'}
                 </p>
                 <p class="card-text mb-0"><strong>Respuesta correcta:</strong>
-                    ${q.correctAnswer.toUpperCase()}: ${q.answers[q.correctAnswer]}
+                    ${correctDisplayKey.toUpperCase()}: ${originalCorrectAnswerValue}
                 </p>
         `;
 
         if (isCorrect) {
             feedbackHtml += `<p class="text-success fw-bold mb-0">¡Correcto! ✅</p>`;
-        } else if (userAnswer !== null) {
+        } else if (userAnswerDisplayKey !== null) {
             feedbackHtml += `<p class="text-danger fw-bold mb-0">¡Incorrecto! ❌</p>`;
         } else {
             feedbackHtml += `<p class="text-muted fw-bold mb-0">No respondiste esta pregunta. ❔</p>`;
         }
 
         feedbackHtml += `</div>`;
-        answerCard.innerHTML = feedbackHtml; // Asigna el HTML completo a la tarjeta
+        answerCard.innerHTML = feedbackHtml;
         answersDiv.appendChild(answerCard);
     });
 }
