@@ -1088,11 +1088,13 @@ function submitQuiz() {
         message = "¡No te desanimes! Este es solo un paso en tu camino de aprendizaje. Cada intento te acerca más a dominar el contenido. ¡Con un poco más de estudio y práctica, verás grandes mejoras! ¡Tú puedes!😉💸";
     } else if (finalGrade >= 4.0 && finalGrade < 6.0) {
         message = "¡Felicidades! Has alcanzado la meta, ¡y eso es genial! Este resultado demuestra que tienes una buena base. Ahora, a seguir reforzando esos conocimientos para ir por más. ¡Vamos por ese 7! 😉👍";
-    } else if (finalGrade >= 6.0 && finalGrade < 7.0) {
+    } else if (finalGrade === 6.0) { // Specific message for exactly 6.0
+        message = "¡Impresionante, un 6.0! ¡Estás a un paso de la excelencia! Sigue con ese ritmo y alcanzarás el máximo. ¡Felicidades por tu gran desempeño! 🎉👏";
+    } else if (finalGrade > 6.0 && finalGrade < 7.0) { // Adjusted range for >6.0 to <7.0
         message = "¡Wow, qué resultado tan fantástico! ¡Esto es una prueba de tu gran compromiso y que dominas el tema! ¡¡FELICITACIONES!!🎉👏";
-    } else if (finalGrade == 7.0) {
+    } else if (finalGrade === 7.0) {
         message = "FELICITACIONES RODRIGOOO ERES SECOOOO! 🔥🤩";
-    }
+}
 
     gradeDisplay.textContent = finalGrade;
     statusDisplay.textContent = message;
