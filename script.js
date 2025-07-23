@@ -1089,7 +1089,7 @@ function submitQuiz() {
     } else if (finalGrade >= 4.0 && finalGrade < 6.0) {
         message = "¡Felicidades! Has alcanzado la meta, ¡y eso es genial! Este resultado demuestra que tienes una buena base. Ahora, a seguir reforzando esos conocimientos para ir por más. ¡Vamos por ese 7! 😉👍";
     } else if (finalGrade >= 6.0 && finalGrade < 7.0) {
-        message = ""¡Wow, qué resultado tan fantástico! ¡Esto es una prueba de tu gran compromiso y que dominas el tema! ¡¡FELICITACIONES!!🎉👏";
+        message = "¡Wow, qué resultado tan fantástico! ¡Esto es una prueba de tu gran compromiso y que dominas el tema! ¡¡FELICITACIONES!!🎉👏";
     } else if (finalGrade == 7.0) {
         message = "FELICITACIONES RODRIGOOO ERES SECOOOO! 🔥🤩";
     }
